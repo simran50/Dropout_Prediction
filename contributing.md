@@ -43,7 +43,7 @@ Thank you for your interest in contributing to this project! We welcome contribu
 Once you submit your pull request, it will be reviewed. You may be asked to make changes based on the review. Once the review process is complete, your pull request will be merged into the main repository.
 
 ## Code of Conduct
-Please note that this project adheres to a [Code of Conduct](link-to-your-code-of-conduct). By participating, you are expected to uphold this code.
+Please note that this project adheres to a [Code of Conduct](https://github.com/simran50/Dropout_Prediction/blob/main/contributing.md). By participating, you are expected to uphold this code.
 
 ## Reporting Issues
 If you encounter any issues while working on this project, please feel free to [open an issue](link-to-your-issues-page). Be sure to provide as much detail as possible.
