@@ -54,3 +54,97 @@ train_df['Target'].unique()
 
 train_df.groupby('Target')['Target'].count()
 
+train_df.describe().T
+
+fig, axes = plt.subplots(3, 2, sharex=True, figsize=(15,10))
+
+sns.kdeplot(data=train_df ,x='Curricular units 2nd sem (approved)', hue='Target', ax=axes[0,0]);
+axes[0,0].set_title('Curricular units 2nd sem (approved)');
+
+sns.kdeplot(data=train_df ,x='Curricular units 2nd sem (grade)', hue='Target', ax=axes[0,1]);
+axes[0,1].set_title('Curricular units 2nd sem (grade)');
+
+sns.kdeplot(data=train_df ,x='Curricular units 1st sem (approved)', hue='Target', ax=axes[1,0]);
+axes[1,0].set_title('Curricular units 1st sem (approved)');
+
+sns.kdeplot(data=train_df ,x='Curricular units 1st sem (grade)', hue='Target', ax=axes[1,1]);
+axes[1,1].set_title('Curricular units 1st sem (grade)');
+
+sns.kdeplot(data=train_df ,x='Curricular units 2nd sem (evaluations)', hue='Target', ax=axes[2,0]);
+axes[2,0].set_title('Curricular units 2nd sem (evaluations)');
+
+sns.kdeplot(data=train_df ,x='Curricular units 1st sem (evaluations)', hue='Target', ax=axes[2,1]);
+axes[2,1].set_title('Curricular units 1st sem (evaluations)');
+
+
+fig, axes = plt.subplots(1, 3, sharex=True, figsize=(10,5))
+
+sns.scatterplot(data=train_df ,x='Curricular units 1st sem (approved)', y='Curricular units 2nd sem (approved)', hue='Target', ax=axes[0]);
+
+sns.scatterplot(data=train_df ,x='Curricular units 1st sem (grade)', y='Curricular units 2nd sem (grade)', hue='Target', ax=axes[1]);
+
+sns.scatterplot(data=train_df ,x='Curricular units 1st sem (evaluations)', y='Curricular units 2nd sem (evaluations)', hue='Target',ax=axes[2]);
+
+def check_and_remove_outliers(df):
+
+    outliers_columns = []
+    total_rows = len(df)
+    
+    for column in df.select_dtypes(include=[np.number]).columns:
+        Q1 = df[column].quantile(0.25)
+        Q3 = df[column].quantile(0.75)
+        IQR = Q3 - Q1
+        lower_bound = Q1 - 1.5 * IQR
+        upper_bound = Q3 + 1.5 * IQR
+        
+        # Identify outliers
+        outliers = (df[column] < lower_bound) | (df[column] > upper_bound)
+        outlier_count = outliers.sum()
+        outlier_percentage = (outlier_count / total_rows) * 100
+        
+        if outlier_percentage >= 20:
+            outliers_columns.append(column)
+            print(f"Outliers detected in column '{column}': {outlier_percentage:.2f}% of total rows.")
+            
+            # Remove outliers from the DataFrame
+            df = df[~outliers]
+            print(f"Removed {outlier_count} outliers from column '{column}'.")
+    
+    if not outliers_columns:
+        print("No columns with outliers exceeding 20% detected.")
+
+    return df
+
+df = check_and_remove_outliers(train_df)
+
+fig, axes = plt.subplots(1, 3, sharex=True, figsize=(10,5))
+
+sns.scatterplot(data=df ,x='Curricular units 1st sem (approved)', y='Curricular units 2nd sem (approved)', hue='Target', ax=axes[0]);
+
+sns.scatterplot(data=df ,x='Curricular units 1st sem (grade)', y='Curricular units 2nd sem (grade)', hue='Target', ax=axes[1]);
+
+sns.scatterplot(data=df ,x='Curricular units 1st sem (evaluations)', y='Curricular units 2nd sem (evaluations)', hue='Target',ax=axes[2]);
+
+
+# data preparation
+
+X=df.drop('Target',axis=1)
+y=df['Target'].map({'Graduate':0, 'Dropout':1, 'Enrolled':2})
+
+for colname in X.select_dtypes("object"):
+    X[colname], _ = X[colname].factorize()
+
+from sklearn.feature_selection import mutual_info_classif
+
+threshold = 20 
+high_score_features = []
+
+feature_scores = mutual_info_classif(X, y, random_state=0)
+
+for score, f_name in sorted(zip(feature_scores, X.columns), reverse=True)[:threshold]:
+        print(f_name, score)
+        high_score_features.append(f_name)
+X_new = X[high_score_features]
+
+print(X_new.columns)
+
